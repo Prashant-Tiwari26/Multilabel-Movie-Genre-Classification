@@ -1,7 +1,7 @@
 import torch
 import numpy as np
 import seaborn as sns
-from tqdm import tqdm
+from tqdm.tk import tqdm
 import matplotlib.pyplot as plt
 from sklearn.metrics import accuracy_score
 
