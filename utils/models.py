@@ -1,5 +1,6 @@
 import torch
 import torchtext
+from transformers import DistilBertModel
 
 class LSTMbaseGloVe(torch.nn.Module):
     def __init__(self, n_layers:int=3, embed_dim:int=300, hidden_dim:int=256, embeddings:str='42B', bidirectionality:bool=True, freeze:bool=False) -> None:
@@ -65,4 +66,26 @@ class GRUBaseGloVe(torch.nn.Module):
         embeddings, _ = self.GRU(overview)
         embeddings = embeddings[:,-1,:]
         output = self.linear(embeddings)
+        return output
+    
+class DistilBertBaseUncased(torch.nn.Module):
+    def __init__(self) -> None:
+        super().__init__()
+        self.model = DistilBertModel.from_pretrained('distilbert-base-uncased')
+        self.ffn = torch.nn.Sequential(
+            torch.nn.Linear(768, 768),
+            torch.nn.Dropout(0.2),
+            torch.nn.Linear(768, 18)
+        )
+        print("Number of Parameters: %.2fM" % (self.get_num_params()/1e6,))
+
+    def get_num_params(self):
+        return sum(p.numel() for p in self.parameters())
+
+    def forward(self, input_ids, attn_mask):
+        output = self.model(
+            input_ids, 
+            attention_mask=attn_mask
+        )
+        output = self.ffn(output.last_hidden_state[:,-1,:])
         return output

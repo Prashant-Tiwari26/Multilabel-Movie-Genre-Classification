@@ -54,6 +54,32 @@ class TextDataset(Dataset):
 
         return (text, label)
 
+class TextDatasetSLM(Dataset):
+    def __init__(self, x:np.ndarray, y:np.ndarray, tokenizer, max_seq_length:int=256) -> None:
+        self.x = x
+        self.y = y
+        self.tokenizer = tokenizer
+        self.max_seq_length = max_seq_length
+
+    def __len__(self):
+        return len(self.x)
+    
+    def __getitem__(self, index):
+        tokens = self.x[index]
+        inputs = self.tokenizer(
+            tokens,
+            add_special_tokens = True,
+            max_length = self.max_seq_length,
+            truncation = True,
+            padding = "max_length",
+            return_attention_mask = True,
+            return_tensors = "pt"
+        )
+        return {
+            'input_ids': inputs['input_ids'].flatten(),
+            'attention_mask': inputs['attention_mask'].flatten(),
+            'targets': torch.FloatTensor(self.y[index])
+        }
 
 def get_wordnet_pos(treebank_tag:str):
     """
