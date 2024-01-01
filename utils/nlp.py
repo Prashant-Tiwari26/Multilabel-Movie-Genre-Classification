@@ -55,11 +55,12 @@ class TextDataset(Dataset):
         return (text, label)
 
 class TextDatasetSLM(Dataset):
-    def __init__(self, x:np.ndarray, y:np.ndarray, tokenizer, max_seq_length:int=256) -> None:
+    def __init__(self, x:np.ndarray, y:np.ndarray, tokenizer, max_seq_length:int=256, get_token_type:bool=False) -> None:
         self.x = x
         self.y = y
         self.tokenizer = tokenizer
         self.max_seq_length = max_seq_length
+        self.get_token_type = get_token_type
 
     def __len__(self):
         return len(self.x)
@@ -72,12 +73,19 @@ class TextDatasetSLM(Dataset):
             max_length = self.max_seq_length,
             truncation = True,
             padding = "max_length",
-            return_attention_mask = True,
+            return_token_type_ids = self.get_token_type,
             return_tensors = "pt"
         )
+        if not self.get_token_type:
+            return {
+                'input_ids': inputs['input_ids'].flatten(),
+                'attention_mask': inputs['attention_mask'].flatten(),
+                'targets': torch.FloatTensor(self.y[index])
+            }
         return {
             'input_ids': inputs['input_ids'].flatten(),
             'attention_mask': inputs['attention_mask'].flatten(),
+            'token_type_ids':inputs['token_type_ids'].flatten(),
             'targets': torch.FloatTensor(self.y[index])
         }
 
