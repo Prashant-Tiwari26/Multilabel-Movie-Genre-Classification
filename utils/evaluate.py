@@ -1,6 +1,9 @@
 import sys
 sys.path.append("C:\College\Projects\Multilabel-Movie-Genre-Classification")
 
+import warnings
+warnings.filterwarnings("ignore")
+
 import torch
 import numpy as np
 from torch.utils.data import DataLoader
